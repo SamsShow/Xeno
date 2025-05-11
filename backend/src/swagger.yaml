@@ -1,0 +1,757 @@
+openapi: 3.0.0
+info:
+  title: Xeno Data Ingestion API
+  description: >
+    API for customer and order data ingestion with asynchronous processing.
+    The API uses a pub-sub architecture with RabbitMQ for message handling.
+  version: 1.0.0
+  contact:
+    name: Xeno Support
+    email: support@xeno.com
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+
+tags:
+  - name: Customers
+    description: Customer data operations
+  - name: Orders
+    description: Order data operations
+
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: "123 Main St"
+        city:
+          type: string
+          example: "San Francisco"
+        state:
+          type: string
+          example: "CA"
+        zipCode:
+          type: string
+          example: "94103"
+        country:
+          type: string
+          example: "USA"
+
+    CustomerInput:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+      properties:
+        name:
+          type: string
+          example: "Mohit Sharma"
+        email:
+          type: string
+          format: email
+          example: "mohit@example.com"
+        phone:
+          type: string
+          example: "+919876543210"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "1990-01-15"
+        address:
+          $ref: "#/components/schemas/Address"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["vip", "regular", "new"]
+        metadata:
+          type: object
+          additionalProperties: true
+          example:
+            referredBy: "customer-123"
+            source: "web"
+
+    Customer:
+      allOf:
+        - $ref: "#/components/schemas/CustomerInput"
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "60d21b4667d0d8992e610c85"
+            createdAt:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updatedAt:
+              type: string
+              format: date-time
+              example: "2023-01-16T10:15:00Z"
+
+    OrderItem:
+      type: object
+      required:
+        - productId
+        - name
+        - price
+        - quantity
+      properties:
+        productId:
+          type: string
+          example: "prod-123"
+        name:
+          type: string
+          example: "Smartphone X"
+        price:
+          type: number
+          format: float
+          example: 999.99
+        quantity:
+          type: integer
+          minimum: 1
+          example: 1
+
+    OrderInput:
+      type: object
+      required:
+        - customerId
+        - items
+        - totalAmount
+        - paymentMethod
+      properties:
+        customerId:
+          type: string
+          example: "60d21b4667d0d8992e610c85"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        totalAmount:
+          type: number
+          format: float
+          example: 1099.98
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+          default: pending
+          example: "pending"
+        paymentMethod:
+          type: string
+          example: "credit_card"
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, refunded]
+          default: unpaid
+          example: "unpaid"
+        shippingAddress:
+          $ref: "#/components/schemas/Address"
+        metadata:
+          type: object
+          additionalProperties: true
+          example:
+            promotionCode: "SUMMER10"
+            notes: "Gift wrap requested"
+
+    Order:
+      allOf:
+        - $ref: "#/components/schemas/OrderInput"
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "61f21b4667d0d8992e610c86"
+            createdAt:
+              type: string
+              format: date-time
+              example: "2023-01-20T11:30:00Z"
+            updatedAt:
+              type: string
+              format: date-time
+              example: "2023-01-20T11:35:00Z"
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Validation failed"
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                    message:
+                      type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Resource not found"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Something went wrong"
+
+paths:
+  /api/customers:
+    post:
+      tags:
+        - Customers
+      summary: Add a new customer
+      description: Adds a new customer (async processing via queue)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "202":
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Customer data accepted for processing"
+                  requestId:
+                    type: string
+                    example: "1642345678901"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    get:
+      tags:
+        - Customers
+      summary: Get all customers
+      description: Retrieves all customers with pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+          description: Number of items per page
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Filter by name (case-insensitive regex)
+        - name: email
+          in: query
+          schema:
+            type: string
+          description: Filter by email (case-insensitive regex)
+        - name: phone
+          in: query
+          schema:
+            type: string
+          description: Filter by phone (case-insensitive regex)
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      customers:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Customer"
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 5
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/customers/bulk:
+    post:
+      tags:
+        - Customers
+      summary: Add multiple customers
+      description: Add multiple customers in bulk (async processing via queue)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "202":
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "10 customers accepted for processing"
+                  requestId:
+                    type: string
+                    example: "1642345678901"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/customers/{id}:
+    get:
+      tags:
+        - Customers
+      summary: Get customer by ID
+      description: Retrieve a single customer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Customer ID
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: "#/components/schemas/Customer"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    put:
+      tags:
+        - Customers
+      summary: Update customer
+      description: Update an existing customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Customer ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: "#/components/schemas/Customer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags:
+        - Customers
+      summary: Delete customer
+      description: Delete a customer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Customer ID
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Customer with ID 60d21b4667d0d8992e610c85 deleted successfully"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/orders:
+    post:
+      tags:
+        - Orders
+      summary: Add a new order
+      description: Adds a new order (async processing via queue)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "202":
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Order data accepted for processing"
+                  requestId:
+                    type: string
+                    example: "1642345678901"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    get:
+      tags:
+        - Orders
+      summary: Get all orders
+      description: Retrieves all orders with pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+          description: Number of items per page
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, cancelled]
+          description: Filter by order status
+        - name: paymentStatus
+          in: query
+          schema:
+            type: string
+            enum: [unpaid, paid, refunded]
+          description: Filter by payment status
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by start date (ISO format)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by end date (ISO format)
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Order"
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 5
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/orders/bulk:
+    post:
+      tags:
+        - Orders
+      summary: Add multiple orders
+      description: Add multiple orders in bulk (async processing via queue)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrderInput"
+      responses:
+        "202":
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "5 orders accepted for processing"
+                  requestId:
+                    type: string
+                    example: "1642345678901"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      description: Retrieve a single order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: "#/components/schemas/Order"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    put:
+      tags:
+        - Orders
+      summary: Update order
+      description: Update an existing order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags:
+        - Orders
+      summary: Delete order
+      description: Delete an order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Order with ID 61f21b4667d0d8992e610c86 deleted successfully"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/orders/customer/{customerId}:
+    get:
+      tags:
+        - Orders
+      summary: Get orders by customer ID
+      description: Retrieve all orders for a specific customer
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Customer ID
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+          description: Number of items per page
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Order"
+                      total:
+                        type: integer
+                        example: 10
+                      page:
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 1
+        "500":
+          $ref: "#/components/responses/ServerError"

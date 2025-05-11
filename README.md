@@ -1,169 +1,137 @@
-# Mini CRM Platform
+# Xeno CRM
 
-A modern Customer Relationship Management (CRM) platform that enables customer segmentation, personalized campaign delivery, and intelligent insights using AI-powered features.
+Xeno is a modern CRM application designed to help businesses manage their customer relationships, marketing campaigns, and communications.
 
-## Project Overview
+## Features
 
-This Mini CRM Platform is designed to handle customer data, create targeted campaigns, and deliver personalized messages while providing intelligent insights through AI integration.
-
-## Core Features
-
-### 1. Data Ingestion APIs
-
-- Secure REST APIs for customer and order data ingestion
-- API documentation using Postman/Swagger UI
-- Optional: Pub-sub architecture using message broker (Kafka/RabbitMQ/Redis Streams)
-  - API layer for validation
-  - Asynchronous data persistence via consumer service
-
-### 2. Campaign Creation UI
-
-- Dynamic audience segmentation with flexible rule logic
-- Rule builder supporting AND/OR conditions
-- Audience size preview functionality
-- Campaign history dashboard showing:
-  - Past campaigns list
-  - Delivery statistics (sent, failed, audience size)
-  - Chronological campaign display
-
-### 3. Campaign Delivery & Logging
-
-- Campaign initiation on segment save
-- Communication log storage
-- Personalized message delivery via vendor API
-- Delivery receipt handling
-- Batch processing for delivery status updates
-
-### 4. Authentication
-
-- Google OAuth 2.0 integration
-- Protected routes for campaign creation and viewing
-
-### 5. AI Integration Features
-
-1. Natural Language to Segment Rules
-
-   - Convert natural language prompts to logical rules
-   - Example: "People who haven't shopped in 6 months and spent over ₹5K"
-
-2. AI-Driven Message Suggestions
-
-   - Generate message variants based on campaign objectives
-   - Optional: Product/offer image recommendations
-
-3. Campaign Performance Summarization
-
-   - Human-readable insights and statistics
-   - Delivery rate analysis by customer segments
-
-4. Smart Scheduling Suggestions
-
-   - AI-powered campaign timing recommendations
-   - Based on customer activity patterns
-
-5. Audience Lookalike Generator
-
-   - Suggest similar audiences based on high-performing segments
-
-6. Auto-tagging Campaigns
-   - AI-based campaign categorization
-   - Intent-based labeling
+- **Authentication with Google OAuth 2.0**: Secure login process with Google account integration
+- **Customer Management**: Store and manage customer data with comprehensive profiles
+- **Campaign Management**: Create, manage, and track marketing campaigns
+- **Communication Tracking**: Log and analyze customer communications
+- **AI Integration**: Powered by Google's Gemini AI for message suggestions and campaign insights
 
 ## Tech Stack
 
-### Frontend
+- **Frontend**: React, TypeScript, Vite, TailwindCSS
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: MySQL
+- **Authentication**: Passport.js with Google OAuth 2.0
+- **AI Integration**: Google Gemini API
 
-- Next.js/React.js
-- Modern UI components
-- Responsive design
+## Prerequisites
 
-### Backend
+- Node.js (v18+)
+- MySQL
+- Google OAuth credentials (for authentication)
+- Google Gemini API key (for AI features)
 
-- Node.js/Spring Boot
-- RESTful APIs
-- Message broker integration (optional)
+## Installation
 
-### Database
+1. **Clone the repository**
 
-- MySQL/MongoDB
-- Efficient data modeling
-- Optimized queries
+   ```bash
+   git clone https://github.com/yourusername/xeno.git
+   cd xeno
+   ```
 
-### Additional Tools
+2. **Install dependencies**
 
-- Message Broker: Kafka/RabbitMQ/Redis Streams (optional)
-- AI Services: OpenAI, Google Vertex AI, Replicate, etc.
-- Image APIs for personalization
+   ```bash
+   # Install root dependencies
+   npm install
 
-## Project Structure
+   # Install backend dependencies
+   cd backend
+   npm install
+   cd ..
+   ```
 
+3. **Configure environment variables**
+
+   Create a `.env` file in the `backend` directory with the following variables:
+
+   ```
+   # Server configuration
+   PORT=3000
+   NODE_ENV=development
+
+   # MySQL Database Configuration
+   DB_NAME=xeno
+   DB_USER=root
+   DB_PASSWORD=your_password
+   DB_HOST=localhost
+   DB_PORT=3306
+
+   # Authentication
+   JWT_SECRET=your_jwt_secret
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   FRONTEND_URL=http://localhost:5173
+   TOKEN_EXPIRY=7d
+
+   # AI Integration
+   GEMINI_API_KEY=your_gemini_api_key
+
+   # Optional RabbitMQ configuration
+   ENABLE_RABBITMQ=false
+   ```
+
+4. **Set up MySQL database**
+
+   Create a new MySQL database:
+
+   ```sql
+   CREATE DATABASE xeno;
+   ```
+
+   Initialize the database with sample data:
+
+   ```bash
+   npm run db:init
+   ```
+
+## Running the Application
+
+You can run both the frontend and backend concurrently:
+
+```bash
+npm run start
 ```
-xeno/
-├── src/                    # Frontend application
-│   ├── assets/            # Static assets and images
-│   ├── components/        # Reusable React components
-│   ├── pages/            # Next.js pages and routing
-│   ├── styles/           # Global styles and CSS modules
-│   ├── utils/            # Helper functions and utilities
-│   ├── hooks/            # Custom React hooks
-│   ├── context/          # React context providers
-│   ├── types/            # TypeScript type definitions
-│   ├── services/         # API service calls
-│   ├── App.jsx           # Main App component
-│   ├── main.jsx          # Entry point
-│   ├── App.css           # App styles
-│   └── index.css         # Global styles
-│
-├── backend/               # Node.js backend application
-│   ├── src/              # Source code
-│   │   ├── controllers/  # Route controllers
-│   │   ├── models/       # Database models
-│   │   ├── routes/       # API routes
-│   │   ├── services/     # Business logic
-│   │   ├── middleware/   # Custom middleware
-│   │   ├── utils/        # Helper functions
-│   │   ├── config/       # Configuration files
-│   │   └── types/        # TypeScript type definitions
-│   ├── tests/            # Backend tests
-│   ├── .env              # Environment variables
-│   ├── tsconfig.json     # TypeScript configuration
-│   └── package.json      # Backend dependencies
-│
-├── .gitignore
-└── README.md
+
+Or run them separately:
+
+```bash
+# Frontend only
+npm run dev:frontend
+
+# Backend only
+npm run dev:backend
 ```
 
-## Getting Started
+The application will be available at:
 
-1. Clone the repository
-2. Install dependencies
-3. Set up environment variables
-4. Run development server
-5. Access the application
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000
+- API Documentation: http://localhost:3000/api-docs
 
-## Evaluation Criteria
+## Building for Production
 
-The project will be evaluated based on:
+```bash
+npm run build:all
+```
 
-- Code quality and project structure
-- Creative problem solving and clean UX
-- Scalability (especially in ingestion & delivery flows)
-- AI integration and thoughtful use of tools
-- Completeness of solution
-- Documentation and communication
+## API Documentation
 
-## Important Notes
+The API documentation is available at `/api-docs` when the server is running. It's generated using Swagger and provides detailed information about all available endpoints.
 
-- All work must be original
-- Plagiarism is strictly prohibited
-- Be prepared to discuss implementation decisions during interviews
-- Focus on clean, maintainable code
-- Prioritize user experience and performance
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-[Specify License]
-
-## Contact
-
-[Your Contact Information]
+This project is licensed under the MIT License - see the LICENSE file for details.
