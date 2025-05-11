@@ -172,8 +172,22 @@ export const communicationService = {
 
     // In a real app, this would make DB updates in batches
     // For simplicity, we'll update campaign stats directly
-    const campaignModule = await import("./campaign-service");
-    campaignModule.campaignService.updateCampaignStats(campaignId);
+    import("../services/campaignService").then((module) => {
+      module.campaignService.updateCampaignStats(campaignId, {
+        sent: communicationService
+          .getCommunicationLogs(campaignId)
+          .filter((log) => log.status === "SENT").length,
+        delivered: communicationService
+          .getCommunicationLogs(campaignId)
+          .filter((log) => log.status === "SENT").length, // In a real app these would be different
+        failed: communicationService
+          .getCommunicationLogs(campaignId)
+          .filter((log) => log.status === "FAILED").length,
+        pending: communicationService
+          .getCommunicationLogs(campaignId)
+          .filter((log) => log.status === "PENDING").length,
+      });
+    });
 
     return communicationLogs[logIndex];
   },

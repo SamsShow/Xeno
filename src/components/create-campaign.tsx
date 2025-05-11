@@ -7,7 +7,7 @@ import { RuleGroup } from "./rule-group";
 import { AudiencePreview } from "./audience-preview";
 import { RuleGroup as RuleGroupType, LogicalOperator } from "../types/campaign";
 import { generateId } from "../lib/utils";
-import { campaignService } from "../lib/campaign-service";
+import { campaignService } from "../services/campaignService";
 import { ArrowLeft, Save, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { MessageSuggestions } from "./message-suggestions";
@@ -60,7 +60,7 @@ export const CreateCampaign: React.FC<CreateCampaignProps> = ({
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const newCampaign = campaignService.createCampaign(
+      const newCampaign = await campaignService.createCampaign(
         name,
         description,
         rules

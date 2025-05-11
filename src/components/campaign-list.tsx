@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Plus, MoreVertical, Search } from "lucide-react";
 import { Campaign } from "../types/campaign";
-import { campaignService } from "../lib/campaign-service";
+import { campaignService } from "../services/campaignService";
 import { CommunicationLogView } from "../components/communication-log";
 import { CampaignInsightsPanel } from "./campaign-insights";
 import {
@@ -52,7 +52,7 @@ export const CampaignList: React.FC<CampaignListProps> = ({ onCreateNew }) => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const fetchedCampaigns = campaignService.getCampaigns();
+        const fetchedCampaigns = await campaignService.getCampaigns();
         setCampaigns(fetchedCampaigns);
       } catch (err) {
         setError("Failed to load campaigns");

@@ -2,6 +2,7 @@ import express from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { mockAuthenticate } from "../middleware/auth";
 
 dotenv.config();
 
@@ -95,7 +96,9 @@ router.get(
  */
 router.get(
   "/validate",
-  passport.authenticate("jwt", { session: false }),
+  process.env.NODE_ENV === "production"
+    ? passport.authenticate("jwt", { session: false })
+    : mockAuthenticate,
   (req, res) => {
     // If we reach here, the token is valid
     res.json({

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { RuleGroup } from "../types/campaign";
 import { Button } from "./ui/button";
-import { campaignService } from "../lib/campaign-service";
+import { campaignService } from "../services/campaignService";
 import React from "react";
 
 interface AudiencePreviewProps {

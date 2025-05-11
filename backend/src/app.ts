@@ -11,6 +11,7 @@ import customerRoutes from "./routes/customerRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import authRoutes from "./routes/authRoutes";
 import aiRoutes from "./routes/aiRoutes";
+import campaignRoutes from "./routes/campaignRoutes";
 import { authenticate } from "./middleware/auth";
 import { initializePassport } from "./config/passport";
 
@@ -80,6 +81,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/customers", authenticate, customerRoutes);
 app.use("/api/orders", authenticate, orderRoutes);
 app.use("/api/ai", authenticate, aiRoutes);
+app.use("/api/campaigns", campaignRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -114,7 +116,7 @@ app.use(
   }
 );
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

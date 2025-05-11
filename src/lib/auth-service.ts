@@ -24,28 +24,57 @@ const mockGoogleResponse = {
 export const authService = {
   // Initialize auth, check for existing session
   init: async (): Promise<User | null> => {
-    // In a real implementation, this would check localStorage or cookies
-    // and verify the token with the backend
     try {
+      // Check for existing token in localStorage
       const savedToken = localStorage.getItem("auth_token");
-      if (savedToken) {
-        // In a real app, validate token with backend
-        const response = await fetch("/api/auth/validate", {
-          headers: {
-            Authorization: `Bearer ${savedToken}`,
-          },
-        });
 
-        if (response.ok) {
-          const userData = await response.json();
-          currentUser = userData;
-          return userData;
-        } else {
-          // Token invalid, clear it
-          localStorage.removeItem("auth_token");
+      if (savedToken) {
+        try {
+          // Attempt to validate token with backend
+          const response = await fetch("/api/auth/validate", {
+            headers: {
+              Authorization: `Bearer ${savedToken}`,
+            },
+          });
+
+          if (response.ok) {
+            // Token is valid
+            const result = await response.json();
+            const userData = result.data;
+
+            // Create user object with backend data and token
+            const user: User = {
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              picture: userData.picture,
+              accessToken: savedToken,
+            };
+
+            currentUser = user;
+            return user;
+          } else {
+            // For development, fallback to mock user when token validation fails
+            if (process.env.NODE_ENV !== "production") {
+              currentUser = mockGoogleResponse;
+              return mockGoogleResponse;
+            }
+
+            // In production, clear invalid token
+            localStorage.removeItem("auth_token");
+            return null;
+          }
+        } catch (error) {
+          // Handle network errors by using mock data in development
+          console.error("Error validating token:", error);
+          if (process.env.NODE_ENV !== "production") {
+            currentUser = mockGoogleResponse;
+            return mockGoogleResponse;
+          }
           return null;
         }
       }
+
       return null;
     } catch (error) {
       console.error("Error initializing auth:", error);
