@@ -1,6 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import { toast } from "sonner";
 import App from "./App";
 import { AuthCallback } from "./components/auth-callback";
@@ -14,6 +20,12 @@ import "./index.css";
 // Add toast to window for access in other files
 window.toast = toast;
 
+// Create a wrapper component to handle navigation
+const CampaignListWrapper = () => {
+  const navigate = useNavigate();
+  return <CampaignList onCreateNew={() => navigate("/campaigns/create")} />;
+};
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -25,7 +37,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             path="campaigns"
             element={
               <ProtectedRoute>
-                <CampaignList />
+                <CampaignListWrapper />
               </ProtectedRoute>
             }
           />
