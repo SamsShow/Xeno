@@ -5,6 +5,7 @@ import { Campaign } from "../types/campaign";
 import { campaignService } from "../services/campaignService";
 import { CommunicationLogView } from "../components/communication-log";
 import { CampaignInsightsPanel } from "./campaign-insights";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +39,7 @@ function getStatusColorClass(status: Campaign["status"]) {
 }
 
 export const CampaignList: React.FC<CampaignListProps> = ({ onCreateNew }) => {
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -258,9 +260,15 @@ export const CampaignList: React.FC<CampaignListProps> = ({ onCreateNew }) => {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">Campaigns</h2>
+        <Button onClick={() => navigate("/campaigns/create")}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Campaign
+        </Button>
+      </div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Campaigns</h1>
         <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-stretch md:items-center w-full md:w-auto">
           <div className="relative w-full md:w-64">
             <span className="absolute left-3 top-2.5 text-muted-foreground">
@@ -287,14 +295,6 @@ export const CampaignList: React.FC<CampaignListProps> = ({ onCreateNew }) => {
               </option>
             ))}
           </select>
-          <Button
-            onClick={onCreateNew}
-            className="flex items-center gap-1"
-            aria-label="Create Campaign"
-          >
-            <Plus className="h-4 w-4" />
-            Create Campaign
-          </Button>
         </div>
       </div>
       {filteredCampaigns.length === 0 ? (

@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "../lib/api-client";
 import { Campaign, RuleGroup } from "../types/campaign";
 
 const API_URL = "/api/campaigns";
@@ -7,7 +7,7 @@ export const campaignService = {
   // Get all campaigns sorted by creation date (newest first)
   getCampaigns: async (): Promise<Campaign[]> => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await apiClient.get(API_URL);
       return transformBackendCampaigns(response.data);
     } catch (error) {
       console.error("Error fetching campaigns:", error);
@@ -18,7 +18,7 @@ export const campaignService = {
   // Get a single campaign by ID
   getCampaign: async (id: string): Promise<Campaign | undefined> => {
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await apiClient.get(`${API_URL}/${id}`);
       return transformBackendCampaign(response.data);
     } catch (error) {
       console.error(`Error fetching campaign ${id}:`, error);
@@ -33,7 +33,7 @@ export const campaignService = {
     rules: RuleGroup
   ): Promise<Campaign> => {
     try {
-      const response = await axios.post(API_URL, {
+      const response = await apiClient.post(API_URL, {
         name,
         description,
         rules,
@@ -57,7 +57,7 @@ export const campaignService = {
   // Deliver a campaign to its audience
   deliverCampaign: async (campaignId: string): Promise<void> => {
     try {
-      await axios.post(`${API_URL}/${campaignId}/send`);
+      await apiClient.post(`${API_URL}/${campaignId}/send`);
     } catch (error) {
       console.error(`Error delivering campaign ${campaignId}:`, error);
       throw new Error("Failed to deliver campaign");
@@ -70,7 +70,7 @@ export const campaignService = {
     status: string
   ): Promise<void> => {
     try {
-      await axios.put(`${API_URL}/${campaignId}/status`, { status });
+      await apiClient.put(`${API_URL}/${campaignId}/status`, { status });
     } catch (error) {
       console.error(`Error updating campaign status ${campaignId}:`, error);
       throw new Error("Failed to update campaign status");
@@ -83,7 +83,7 @@ export const campaignService = {
     metrics: any
   ): Promise<void> => {
     try {
-      await axios.put(`${API_URL}/${campaignId}/metrics`, { metrics });
+      await apiClient.put(`${API_URL}/${campaignId}/metrics`, { metrics });
     } catch (error) {
       console.error(`Error updating campaign metrics ${campaignId}:`, error);
       throw new Error("Failed to update campaign metrics");

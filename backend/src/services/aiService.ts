@@ -180,4 +180,83 @@ Only return valid JSON without any additional explanation. The structure should 
       throw error;
     }
   },
+
+  /**
+   * Generate predictive analytics based on customer data
+   */
+  generatePredictiveAnalytics: async (data: any) => {
+    const prompt = `
+      Analyze the following customer data and provide predictive analytics:
+      
+      Customer Metrics:
+      - Total Orders: ${data.customerMetrics.totalOrders}
+      - Total Spent: $${data.customerMetrics.totalSpent}
+      - Average Order Value: $${data.customerMetrics.averageOrderValue}
+      - Days Since Last Order: ${data.customerMetrics.daysSinceLastOrder}
+      - Communication Count: ${data.customerMetrics.communicationCount}
+      - Response Rate: ${(data.customerMetrics.responseRate * 100).toFixed(1)}%
+      
+      Customer Data:
+      - Name: ${data.customerData.firstName} ${data.customerData.lastName}
+      - Company: ${data.customerData.company || "N/A"}
+      - Job Title: ${data.customerData.jobTitle || "N/A"}
+      - Customer Since: ${new Date(
+        data.customerData.createdAt
+      ).toLocaleDateString()}
+      
+      Please provide:
+      1. Customer Lifetime Value (CLV) prediction
+      2. Churn probability (0-1)
+      3. Next purchase probability (0-1)
+      4. Recommended actions to improve retention and increase CLV
+      
+      Format the response as a JSON object with the following structure:
+      {
+        "customerLifetimeValue": number,
+        "churnProbability": number,
+        "nextPurchaseProbability": number,
+        "recommendedActions": string[]
+      }
+    `;
+
+    try {
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.GEMINI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt,
+                  },
+                ],
+              },
+            ],
+          }),
+        }
+      );
+
+      const result = await response.json();
+      const predictionText = result.candidates[0].content.parts[0].text;
+
+      // Parse the JSON response from the AI
+      const predictions = JSON.parse(predictionText);
+
+      return {
+        customerLifetimeValue: predictions.customerLifetimeValue,
+        churnProbability: predictions.churnProbability,
+        nextPurchaseProbability: predictions.nextPurchaseProbability,
+        recommendedActions: predictions.recommendedActions,
+      };
+    } catch (error) {
+      console.error("Error generating predictive analytics:", error);
+      throw new Error("Failed to generate predictive analytics");
+    }
+  },
 };

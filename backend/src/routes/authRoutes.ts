@@ -1,8 +1,8 @@
 import express from "express";
 import passport from "passport";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import dotenv from "dotenv";
-import { mockAuthenticate } from "../middleware/auth";
+import { mockAuthenticate, authenticate } from "../middleware/auth";
 
 dotenv.config();
 
@@ -48,6 +48,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
+    console.log("Received Google callback");
     try {
       // Extract user info
       const user = req.user as {
@@ -57,6 +58,8 @@ router.get(
         picture?: string;
       };
 
+      console.log("User authenticated:", { id: user.id, email: user.email });
+
       // Create payload for JWT
       const payload = {
         id: user.id,
@@ -64,13 +67,14 @@ router.get(
         name: user.name,
       };
 
-      // Create JWT token - use proper typing with Buffer
-      // @ts-ignore - Ignore TypeScript errors for jwt.sign
+      console.log("Creating JWT token...");
+      // Create JWT token with proper typing
       const token = jwt.sign(payload, JWT_SECRET, {
-        expiresIn: TOKEN_EXPIRY,
+        expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
       });
 
-      // Redirect to frontend with token (in production, use secure cookies)
+      console.log("Redirecting to frontend with token...");
+      // Redirect to frontend with token
       res.redirect(`${FRONTEND_URL}/auth-callback?token=${token}`);
     } catch (error) {
       console.error("Error in Google callback:", error);
@@ -94,18 +98,13 @@ router.get(
  *       401:
  *         description: Unauthorized - invalid token
  */
-router.get(
-  "/validate",
-  process.env.NODE_ENV === "production"
-    ? passport.authenticate("jwt", { session: false })
-    : mockAuthenticate,
-  (req, res) => {
-    // If we reach here, the token is valid
-    res.json({
-      status: "success",
-      data: req.user,
-    });
-  }
-);
+router.get("/validate", authenticate, (req, res) => {
+  console.log("Validating token for user:", req.user);
+  // If we reach here, the token is valid
+  res.json({
+    status: "success",
+    data: req.user,
+  });
+});
 
 export default router;

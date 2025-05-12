@@ -13,6 +13,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  token: string | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
+  token: null,
   login: async () => {},
   logout: async () => {},
 });
@@ -32,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [token, setToken] = useState<string | null>(null);
 
   // Initialize authentication on component mount
   useEffect(() => {
@@ -39,6 +42,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       try {
         const currentUser = await authService.init();
         setUser(currentUser);
+        setToken(currentUser?.accessToken || null);
       } catch (error) {
         console.error("Failed to initialize authentication:", error);
         toast.error("Authentication error occurred");
@@ -56,6 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(true);
       const user = await authService.loginWithGoogle();
       setUser(user);
+      setToken(user.accessToken);
       toast.success(`Welcome, ${user.name}!`);
     } catch (error) {
       console.error("Login failed:", error);
@@ -70,6 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setIsLoading(true);
       await authService.logout();
       setUser(null);
+      setToken(null);
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -83,6 +89,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         user,
         isLoading,
         isAuthenticated: !!user,
+        token,
         login,
         logout,
       }}

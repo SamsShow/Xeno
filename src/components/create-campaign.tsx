@@ -11,6 +11,7 @@ import { campaignService } from "../services/campaignService";
 import { ArrowLeft, Save, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { MessageSuggestions } from "./message-suggestions";
+import { useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -19,15 +20,8 @@ import {
   SelectValue,
 } from "./ui/select";
 
-interface CreateCampaignProps {
-  onSave: () => void;
-  onCancel: () => void;
-}
-
-export const CreateCampaign: React.FC<CreateCampaignProps> = ({
-  onSave,
-  onCancel,
-}) => {
+export const CreateCampaign: React.FC = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [rules, setRules] = useState<RuleGroupType>({
@@ -68,7 +62,7 @@ export const CreateCampaign: React.FC<CreateCampaignProps> = ({
       await campaignService.deliverCampaign(newCampaign.id);
       toast.success("Campaign created and delivery initiated");
       setIsSubmitting(false);
-      onSave();
+      navigate("/campaigns");
     } catch (error) {
       console.error("Error creating campaign:", error);
       toast.error("Failed to create campaign");
@@ -95,7 +89,7 @@ export const CreateCampaign: React.FC<CreateCampaignProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onCancel}
+            onClick={() => navigate("/campaigns")}
             className="text-gray-500"
             aria-label="Back"
           >
@@ -273,7 +267,11 @@ export const CreateCampaign: React.FC<CreateCampaignProps> = ({
           </section>
           {/* Actions */}
           <div className="flex flex-col md:flex-row justify-end gap-2 pt-6 border-t sticky bottom-0 bg-card z-10">
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/campaigns")}
+            >
               Cancel
             </Button>
             <Button

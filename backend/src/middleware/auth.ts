@@ -21,11 +21,15 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("Auth middleware executed");
   // Get token from Authorization header
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1]; // "Bearer TOKEN"
 
+  console.log("Authorization header:", authHeader ? "present" : "missing");
+
   if (!token) {
+    console.log("No token provided");
     return res.status(401).json({
       status: "error",
       message: "Authentication required",
@@ -33,9 +37,11 @@ export const authenticate = (
   }
 
   try {
+    console.log("Verifying token...");
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as XenoUser;
 
+    console.log("Token verified successfully for user:", decoded.email);
     // Add user data to request
     (req as any).user = decoded;
 

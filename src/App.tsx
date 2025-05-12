@@ -1,20 +1,17 @@
 import { useState } from "react";
-import { CampaignList } from "./components/campaign-list";
-import { CreateCampaign } from "./components/create-campaign";
+import { Outlet, useNavigate } from "react-router-dom";
 import { Toaster, toast } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/protected-route";
 import { Header } from "./components/header";
 import "./App.css";
 import React from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 function App() {
-  const [view, setView] = useState<"list" | "create">("list");
+  const navigate = useNavigate();
 
   const handleSaveCampaign = () => {
-    setView("list");
-    // Show success toast notification
+    navigate("/campaigns");
     toast.success("Campaign created successfully");
   };
 
@@ -25,25 +22,7 @@ function App() {
           <Header />
           <main className="flex-1">
             <div className="container mx-auto pt-10 pb-8 px-4 md:px-8 max-w-7xl">
-              <ProtectedRoute>
-                {view === "list" ? (
-                  <CampaignList onCreateNew={() => setView("create")} />
-                ) : (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-3xl font-bold tracking-tight">
-                        Create Campaign
-                      </h2>
-                    </div>
-                    <div className="rounded-lg border bg-card text-card-foreground shadow p-6">
-                      <CreateCampaign
-                        onSave={handleSaveCampaign}
-                        onCancel={() => setView("list")}
-                      />
-                    </div>
-                  </div>
-                )}
-              </ProtectedRoute>
+              <Outlet />
             </div>
           </main>
           <footer className="border-t py-6 md:py-0">

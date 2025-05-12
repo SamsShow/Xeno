@@ -54,23 +54,13 @@ export const authService = {
             currentUser = user;
             return user;
           } else {
-            // For development, fallback to mock user when token validation fails
-            if (process.env.NODE_ENV !== "production") {
-              currentUser = mockGoogleResponse;
-              return mockGoogleResponse;
-            }
-
-            // In production, clear invalid token
+            // Clear invalid token
             localStorage.removeItem("auth_token");
             return null;
           }
         } catch (error) {
-          // Handle network errors by using mock data in development
+          // Handle network errors
           console.error("Error validating token:", error);
-          if (process.env.NODE_ENV !== "production") {
-            currentUser = mockGoogleResponse;
-            return mockGoogleResponse;
-          }
           return null;
         }
       }
@@ -90,23 +80,50 @@ export const authService = {
   // Login with Google
   loginWithGoogle: async (): Promise<User> => {
     try {
-      // In a real implementation, this would open Google OAuth flow
-      // For this demo, we'll simulate a successful login
+      console.log("Attempting to login with Google...");
+      // Check if we have a token from the callback
+      const savedToken = localStorage.getItem("auth_token");
 
-      // 1. In production: Redirect to Google OAuth page
-      // window.location.href = '/api/auth/google';
+      if (savedToken) {
+        console.log("Token found in localStorage, validating...");
+        // Validate the token
+        const response = await fetch("/api/auth/validate", {
+          headers: {
+            Authorization: `Bearer ${savedToken}`,
+          },
+        });
 
-      // 2. For demo: simulate successful auth
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (response.ok) {
+          console.log("Token validation successful");
+          const result = await response.json();
+          const userData = result.data;
 
-      // 3. Process the response
-      const user = mockGoogleResponse;
-      currentUser = user;
+          const user: User = {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            picture: userData.picture,
+            accessToken: savedToken,
+          };
 
-      // 4. Store token in localStorage (or secure cookie in production)
-      localStorage.setItem("auth_token", user.accessToken);
+          console.log("User authenticated:", user.name);
+          currentUser = user;
+          return user;
+        } else {
+          console.error("Token validation failed:", await response.text());
+          throw new Error("Token validation failed");
+        }
+      }
 
-      return user;
+      // Only redirect if we're not already on the callback page
+      if (!window.location.pathname.includes("/auth-callback")) {
+        console.log("No valid token, redirecting to Google OAuth...");
+        window.location.href = "/api/auth/google";
+        throw new Error("Redirecting to Google OAuth");
+      } else {
+        console.log("On callback page but no token found");
+        throw new Error("No token available");
+      }
     } catch (error) {
       console.error("Error logging in with Google:", error);
       toast.error("Failed to login with Google");

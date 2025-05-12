@@ -9,7 +9,8 @@
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "db:init": "ts-node src/scripts/initialize-db.ts"
+    "db:init": "ts-node src/scripts/initialize-db.ts",
+    "initialize-db": "ts-node src/scripts/initialize-db.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.3",

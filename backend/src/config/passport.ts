@@ -12,6 +12,7 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-default-secret-key-for-development";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
 
 // JWT options
 const jwtOptions = {
@@ -27,7 +28,7 @@ export const initializePassport = () => {
       {
         clientID: GOOGLE_CLIENT_ID,
         clientSecret: GOOGLE_CLIENT_SECRET,
-        callbackURL: "/api/auth/google/callback",
+        callbackURL: `${BACKEND_URL}/api/auth/google/callback`,
         scope: ["profile", "email"],
       },
       async (accessToken, refreshToken, profile, done) => {

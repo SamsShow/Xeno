@@ -1,11 +1,11 @@
 import { Router } from "express";
 import * as campaignController from "../controllers/campaignController";
-import { mockAuthenticate } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
 // Apply authentication to all campaign routes
-router.use(mockAuthenticate);
+router.use(authenticate);
 
 // Campaign CRUD routes
 router.get("/", campaignController.getCampaigns);

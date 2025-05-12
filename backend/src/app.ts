@@ -12,6 +12,7 @@ import orderRoutes from "./routes/orderRoutes";
 import authRoutes from "./routes/authRoutes";
 import aiRoutes from "./routes/aiRoutes";
 import campaignRoutes from "./routes/campaignRoutes";
+import analyticsRoutes from "./routes/analyticsRoutes";
 import { authenticate } from "./middleware/auth";
 import { initializePassport } from "./config/passport";
 
@@ -81,7 +82,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/customers", authenticate, customerRoutes);
 app.use("/api/orders", authenticate, orderRoutes);
 app.use("/api/ai", authenticate, aiRoutes);
-app.use("/api/campaigns", campaignRoutes);
+app.use("/api/campaigns", authenticate, campaignRoutes);
+app.use("/api/analytics", authenticate, analyticsRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
