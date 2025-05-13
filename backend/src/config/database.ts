@@ -60,10 +60,37 @@ export const connectDB = async (): Promise<void> => {
 // Sync database models
 export const syncDB = async (): Promise<void> => {
   try {
-    await sequelize.sync({ alter: process.env.NODE_ENV === "development" });
+    // Use force: false, alter: true for non-production environments
+    // This will attempt to alter tables rather than drop them
+    // For production, use {force: false, alter: false} to prevent schema changes
+    const syncOptions = {
+      force: false, // Don't drop tables
+      alter: process.env.NODE_ENV === "development", // Only alter tables in development
+    };
+
+    // Add a safety check for index limitations
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "Synchronizing database with alter:true - indexes may need manual adjustment"
+      );
+    }
+
+    await sequelize.sync(syncOptions);
     console.log("Database synchronized successfully");
   } catch (error) {
     console.error("Unable to synchronize the database:", error);
+
+    // Add better error handling for common issues
+    if (error.name === "SequelizeDatabaseError") {
+      console.error("This appears to be a database schema error.");
+      if (error.original && error.original.code === "ER_TOO_MANY_KEYS") {
+        console.error(
+          "Too many indexes on a table. Consider removing some indexes or using a migration tool instead of sync."
+        );
+        console.error("Affected SQL:", error.sql);
+      }
+    }
+
     throw error;
   }
 };

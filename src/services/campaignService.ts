@@ -30,15 +30,17 @@ export const campaignService = {
   createCampaign: async (
     name: string,
     description: string,
-    rules: RuleGroup
+    rules: RuleGroup,
+    channel: string = "email",
+    content: string = ""
   ): Promise<Campaign> => {
     try {
       const response = await apiClient.post(API_URL, {
         name,
         description,
         rules,
-        channel: "email", // Default to email
-        content: "", // Content will be filled later
+        channel,
+        content,
       });
       return transformBackendCampaign(response.data);
     } catch (error) {
@@ -87,6 +89,20 @@ export const campaignService = {
     } catch (error) {
       console.error(`Error updating campaign metrics ${campaignId}:`, error);
       throw new Error("Failed to update campaign metrics");
+    }
+  },
+
+  // Get campaign delivery information
+  getDeliveryInfo: async (campaignId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`${API_URL}/${campaignId}/delivery`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching delivery info for campaign ${campaignId}:`,
+        error
+      );
+      throw new Error("Failed to fetch delivery information");
     }
   },
 

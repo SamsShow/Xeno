@@ -53,7 +53,6 @@ User.init(
     googleId: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
     },
     role: {
       type: DataTypes.ENUM("admin", "user", "manager"),
@@ -74,6 +73,12 @@ User.init(
     sequelize,
     tableName: "users",
     timestamps: true,
+    indexes: [
+      {
+        name: "googleId_idx",
+        fields: ["googleId"],
+      },
+    ],
   }
 );
 

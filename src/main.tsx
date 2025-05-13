@@ -15,6 +15,7 @@ import { CreateCampaign } from "./components/create-campaign";
 import { AnalyticsDashboard } from "./components/analytics/AnalyticsDashboard";
 import { CustomersList } from "./components/customers/CustomersList";
 import { ProtectedRoute } from "./components/protected-route";
+import { MessagesPage } from "./pages/messages";
 import "./index.css";
 
 // Add toast to window for access in other files
@@ -62,6 +63,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             element={
               <ProtectedRoute>
                 <AnalyticsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="messages"
+            element={
+              <ProtectedRoute>
+                <MessagesPage />
               </ProtectedRoute>
             }
           />

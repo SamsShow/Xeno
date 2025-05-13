@@ -19,6 +19,8 @@ interface CampaignAttributes {
     opened?: number;
     clicked?: number;
     converted?: number;
+    failed?: number;
+    pending?: number;
   };
   tags?: string[];
   createdAt?: Date;
@@ -42,6 +44,8 @@ class Campaign extends Model<CampaignAttributes> implements CampaignAttributes {
     opened?: number;
     clicked?: number;
     converted?: number;
+    failed?: number;
+    pending?: number;
   };
   public tags?: string[];
   public readonly createdAt!: Date;
@@ -121,6 +125,8 @@ Campaign.init(
         opened: 0,
         clicked: 0,
         converted: 0,
+        failed: 0,
+        pending: 0,
       },
     },
     tags: {

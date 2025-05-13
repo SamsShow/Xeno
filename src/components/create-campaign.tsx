@@ -38,6 +38,7 @@ export const CreateCampaign: React.FC = () => {
   const [productDetails, setProductDetails] = useState("");
   const [showAiSuggestions, setShowAiSuggestions] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [channel, setChannel] = useState("email");
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -57,7 +58,9 @@ export const CreateCampaign: React.FC = () => {
       const newCampaign = await campaignService.createCampaign(
         name,
         description,
-        rules
+        rules,
+        channel,
+        messageText
       );
       await campaignService.deliverCampaign(newCampaign.id);
       toast.success("Campaign created and delivery initiated");
@@ -156,6 +159,20 @@ export const CreateCampaign: React.FC = () => {
                   placeholder="Briefly describe the purpose of this campaign"
                   rows={3}
                 />
+              </div>
+              <div>
+                <Label htmlFor="channel">Channel</Label>
+                <Select value={channel} onValueChange={setChannel}>
+                  <SelectTrigger id="channel">
+                    <SelectValue placeholder="Select channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="sms">SMS</SelectItem>
+                    <SelectItem value="push">Push Notification</SelectItem>
+                    <SelectItem value="social">Social Media</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </section>

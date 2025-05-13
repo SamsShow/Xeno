@@ -18,6 +18,9 @@ router.delete("/:id", campaignController.deleteCampaign);
 router.put("/:id/status", campaignController.updateStatus);
 router.put("/:id/metrics", campaignController.updateMetrics);
 
+// Campaign delivery information
+router.get("/:id/delivery", campaignController.getCampaignDeliveryInfo);
+
 // Campaign audience route
 router.get("/:id/audience", campaignController.getCampaignAudience);
 

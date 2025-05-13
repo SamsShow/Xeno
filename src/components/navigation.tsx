@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BarChart3, Mail, Users } from "lucide-react";
+import { BarChart3, Mail, Users, MessageSquare } from "lucide-react";
 
 export function Navigation() {
   const location = useLocation();
@@ -19,6 +19,15 @@ export function Navigation() {
       >
         <Mail className="mr-2 h-4 w-4" />
         Campaigns
+      </Link>
+      <Link
+        to="/messages"
+        className={`flex items-center text-sm font-medium transition-colors hover:text-primary ${
+          isActive("/messages") ? "text-primary" : "text-muted-foreground"
+        }`}
+      >
+        <MessageSquare className="mr-2 h-4 w-4" />
+        Messages
       </Link>
       <Link
         to="/customers"

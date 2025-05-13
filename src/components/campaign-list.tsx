@@ -5,6 +5,7 @@ import { Campaign } from "../types/campaign";
 import { campaignService } from "../services/campaignService";
 import { CommunicationLogView } from "../components/communication-log";
 import { CampaignInsightsPanel } from "./campaign-insights";
+import { CampaignDeliveryInfo } from "./campaign-delivery-info";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -153,37 +154,7 @@ export const CampaignList: React.FC<CampaignListProps> = ({ onCreateNew }) => {
                 <p>{selectedCampaign.description}</p>
               </div>
             )}
-            <div className="bg-card p-4 rounded-lg shadow">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                Stats
-              </h3>
-              <div className="grid grid-cols-4 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {selectedCampaign.stats?.sent || 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Sent</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-green-600">
-                    {selectedCampaign.stats?.delivered || 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Delivered</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-red-600">
-                    {selectedCampaign.stats?.failed || 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Failed</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {selectedCampaign.stats?.pending || 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                </div>
-              </div>
-            </div>
+            <CampaignDeliveryInfo campaignId={selectedCampaign.id} />
             <div>
               <CommunicationLogView campaignId={selectedCampaign.id} />
             </div>

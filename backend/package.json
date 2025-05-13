@@ -6,11 +6,16 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
+    "dev:safe": "cross-env SKIP_DB_SYNC=true nodemon src/app.ts",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
     "db:init": "ts-node src/scripts/initialize-db.ts",
-    "initialize-db": "ts-node src/scripts/initialize-db.ts"
+    "initialize-db": "ts-node src/scripts/initialize-db.ts",
+    "seed:customers": "ts-node src/scripts/seed-customers.ts",
+    "fix-indexes": "ts-node src/scripts/fixUserIndexes.ts",
+    "dev:fix": "ts-node src/scripts/fixUserIndexes.ts && nodemon src/app.ts",
+    "safe-start": "npm run fix-indexes && npm run dev"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.3",
